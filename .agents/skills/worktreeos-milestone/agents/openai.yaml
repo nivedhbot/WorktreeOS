@@ -1,0 +1,4 @@
+interface:
+  display_name: "WorktreeOS Milestone"
+  short_description: "Build and verify one scoped WorktreeOS milestone"
+  default_prompt: "Execute the numbered WorktreeOS milestone from the supplied prompt and update session state."
