@@ -6,7 +6,9 @@ import { join } from 'node:path';
 // Fixed content, author, branch and dates make the fixture's initial commit reproducible.
 // Always allocate a new directory: never initialize or overwrite a user's repository.
 export function createDemoFixture(parent = tmpdir()) {
-  const root = mkdtempSync(join(realpathSync(parent), 'worktreeos-demo-'));
+  const root = mkdtempSync(
+    join(realpathSync.native(parent), 'worktreeos-demo-'),
+  );
   const repoPath = join(root, 'hello-worktree');
   const dataDir = join(root, 'data');
   const worktreeDir = join(root, 'worktrees');

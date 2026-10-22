@@ -10,7 +10,9 @@ import { tmpdir } from 'node:os';
 import { isAbsolute, join, relative, sep } from 'node:path';
 
 export function createFixture() {
-  const temporaryBase = realpathSync(tmpdir());
+  // The JS realpath implementation can preserve Windows 8.3 names such as
+  // RUNNER~1; use the same native canonical spelling as fs.promises.realpath.
+  const temporaryBase = realpathSync.native(tmpdir());
   const root = mkdtempSync(join(temporaryBase, 'worktreeos-test-'));
   const repoPath = join(root, 'repo with spaces');
   mkdirSync(repoPath);

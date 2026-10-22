@@ -76,7 +76,7 @@ export class GitService {
     if (!isAbsolute(directory))
       throw new Error('WORKTREEOS_WORKTREE_DIR must be absolute');
     mkdirSync(directory, { recursive: true });
-    this.worktreeDir = realpathSync(directory);
+    this.worktreeDir = realpathSync.native(directory);
     if (!same(this.worktreeDir, resolve(directory)))
       throw new Error(
         'Worktree directory must not use symlink or junction aliases',

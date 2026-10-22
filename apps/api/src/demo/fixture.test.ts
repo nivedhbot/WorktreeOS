@@ -1,11 +1,24 @@
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+import { realpath } from 'node:fs/promises';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { createFixture, fixtureGit } from '../test/fixtures.js';
 import { createDemoFixture } from './fixture.js';
 
 describe('deterministic demo fixture', () => {
+  it('uses native canonical paths accepted by registration, including Windows temp aliases', async () => {
+    const owner = createFixture();
+    try {
+      const demo = createDemoFixture(owner.root);
+      expect(owner.root).toBe(await realpath(owner.root));
+      expect(owner.repoPath).toBe(await realpath(owner.repoPath));
+      expect(demo.root).toBe(await realpath(demo.root));
+      expect(demo.repoPath).toBe(await realpath(demo.repoPath));
+    } finally {
+      owner.cleanup();
+    }
+  });
   it('allocates distinct repositories with identical commits, no remotes, and a passing tiny test', () => {
     const owner = createFixture();
     try {

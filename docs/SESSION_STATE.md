@@ -1,5 +1,14 @@
 # WorktreeOS handoff
 
+## Verification recovery on 2026-10-23
+
+The current user authorized verification, fixes and pushes through milestone 10. The application is a clean Git repository on `main`, with origin `https://github.com/nivedhbot/WorktreeOS.git`; the older delivery statements below are historical and will be reconciled at completion.
+
+- Fresh baseline `npm run verify` passed 120 Vitest tests and six Chromium cases, plus lint/typecheck/build/format.
+- Hosted baseline run [39838180330](https://github.com/nivedhbot/WorktreeOS/actions/runs/39838180330) passed Ubuntu and quality; Windows failed because JavaScript realpath retained the runner's 8.3 temp alias while native validation expanded it.
+- Fixed test/demo fixture roots and managed worktree canonicalization with native realpath. Regression coverage asserts agreement with asynchronous native paths. Targeted Git/path/demo checks passed 25 tests; API typecheck/build and root lint passed. Symlink/junction rejection is preserved.
+- Next: Codex runtime/recursion review, dashboard refresh consistency, queued approval recovery, then complete verification and synchronized documentation. No model task was run.
+
 Updated: 2026-10-22. Application version: 0.1.0.
 Workspace: `E:/WorktreeOS`; application root: `E:/WorktreeOS/WorktreeOS-Codex-Starter`.
 
