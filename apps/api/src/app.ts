@@ -18,6 +18,7 @@ import type { SchedulerOptions } from './runs/config.js';
 import { claimScheduler } from './runs/ownership.js';
 import { registerWorkflowRoutes } from './routes/workflow.js';
 import { redactText, registerLocalSecurity } from './security.js';
+import { assertAgentHost } from './agents/codex-policy.js';
 
 export function buildApp(
   options: FastifyServerOptions = {},
@@ -31,6 +32,7 @@ export function buildApp(
     scheduler?: SchedulerOptions;
   } = {},
 ) {
+  assertAgentHost();
   const app = Fastify({
     ...options,
     logController: new LogController({ disableRequestLogging: true }),

@@ -27,7 +27,7 @@ A prerequisite must have a completed, associated run for its current revision an
 
 Approvals expire after 15 minutes and bind to task/repository/worktree/model plus prerequisite revisions and real-run history. Modified, expired, rejected or consumed approvals cannot start execution. Concurrent duplicate confirmations produce at most one run. Missing acknowledgement/extra fields fail validation. The old direct real start endpoint now returns 403 APPROVAL_REQUIRED even with the former confirmation payload. This is an intentional safety upgrade from milestone 06. Auth/model/capacity rejection does not consume a still-valid approval; retry requires another explicit confirmation action. A pending unconfirmed request can be reviewed after restart while still valid, but consumed queued/active real work is interrupted and never replayed.
 
-Run-start approval does not approve arbitrary commands. Codex remains in a read-only sandbox, with untrusted approval policy and unavailable interactive escalation failing closed. See [CODEX.md](CODEX.md). No model call occurs in automated tests.
+Run-start approval does not approve arbitrary commands. Codex remains in a read-only sandbox, with granular approval requests denied and unavailable interactive escalation failing closed. See [CODEX.md](CODEX.md). No model call occurs in automated tests.
 
 ## Final review
 

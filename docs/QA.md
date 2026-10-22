@@ -39,7 +39,7 @@ Browser/screenshot QA found and repaired three UI regressions: reselecting the c
 - SQLite foreign-key, self-edge, uniqueness and append-only-history checks; invalid state transition refusal; transactional graph rollback; cycle/missing reference failures; provider/revision prerequisite gating.
 - Single-use/expired/rejected/stale approval failures, concurrent duplicate confirmations, edits during asynchronous discovery, and edits after approval while queued. No provider is invoked when the reviewed context becomes invalid. Auth/model failures do not silently retry or consume approval.
 - Request audit records contain method, route template, response status and request ID rather than headers, raw URLs/query strings, bodies or exception text. Unexpected failures return a generic response and emit a generic failure audit record. New persisted event payloads and SSE history redact known OpenAI-key/Bearer/credential-assignment patterns and structured credential fields while preserving actual usage. Tests use synthetic markers and prove they do not appear in captured logs/events. This is pattern-based redaction, not general secret detection; task/repository source content remains user data and existing append-only histories are not rewritten.
-- Fastify is constrained to patched 5.12.7 or later compatible releases; npm audit is part of the recorded validation. Codex remains read-only/untrusted and fails closed on unavailable command approvals.
+- Fastify is constrained to patched 5.12.7 or later compatible releases; npm audit is part of the recorded validation. Codex remains read-only with denied escalation and fails closed on unavailable command approvals.
 
 ## Artifacts and environment limits
 

@@ -1,9 +1,12 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ThreadEvent } from '@openai/codex-sdk';
 import { CodexProvider } from './codex-provider.js';
 import type { AgentContext } from './provider.js';
 import { randomUUID } from 'node:crypto';
 import { setTimeout as delay } from 'node:timers/promises';
+import { codexConfigOverrides } from './codex-policy.js';
+
+afterEach(() => vi.unstubAllEnvs());
 
 const context = (): AgentContext => ({
   task: {
@@ -28,6 +31,26 @@ const context = (): AgentContext => ({
   model: 'gpt-6-luna',
 });
 describe('Codex adapter (SDK fakes only)', () => {
+  it('refuses nested and already canceled execution before constructing an SDK client', async () => {
+    const factory = vi.fn();
+    const provider = new CodexProvider(factory);
+    vi.stubEnv('WORKTREEOS_AGENT_CHILD', '1');
+    await expect(
+      Array.fromAsync(provider.run(context())),
+    ).rejects.toMatchObject({
+      code: 'RECURSIVE_AGENT_BLOCKED',
+    });
+    vi.unstubAllEnvs();
+    await expect(
+      Array.fromAsync(
+        provider.run({
+          ...context(),
+          signal: AbortSignal.abort(),
+        }),
+      ),
+    ).rejects.toThrow();
+    expect(factory).not.toHaveBeenCalled();
+  });
   it('unwinds the SDK event iterator on cancellation before returning', async () => {
     const controller = new AbortController();
     let cleaned = false;
@@ -109,7 +132,8 @@ describe('Codex adapter (SDK fakes only)', () => {
       })(),
     }));
     const startThread = vi.fn(() => ({ runStreamed }));
-    const provider = new CodexProvider(() => ({ startThread }));
+    const factory = vi.fn(() => ({ startThread }));
+    const provider = new CodexProvider(factory);
     const ctx = context();
     const output = await Array.fromAsync(provider.run(ctx));
     expect(startThread).toHaveBeenCalledWith(
@@ -117,11 +141,27 @@ describe('Codex adapter (SDK fakes only)', () => {
         workingDirectory: ctx.worktree.path,
         model: 'gpt-6-luna',
         sandboxMode: 'read-only',
-        approvalPolicy: 'untrusted',
         networkAccessEnabled: false,
         webSearchMode: 'disabled',
         skipGitRepoCheck: false,
       }),
+    );
+    expect(startThread).toHaveBeenCalledWith(
+      expect.not.objectContaining({
+        approvalPolicy: expect.anything(),
+      }),
+    );
+    expect(factory).toHaveBeenCalledWith(
+      expect.objectContaining({
+        env: expect.objectContaining({ WORKTREEOS_AGENT_CHILD: '1' }),
+        configOverrides: codexConfigOverrides,
+        config: expect.objectContaining({
+          model_providers: {
+            openai: { request_max_retries: 0, stream_max_retries: 0 },
+          },
+        }),
+      }),
+      ctx,
     );
     expect(runStreamed).toHaveBeenCalledWith(ctx.task.objective, {
       signal: ctx.signal,

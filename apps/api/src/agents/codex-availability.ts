@@ -1,11 +1,14 @@
 import { spawn } from 'node:child_process';
-import { createRequire } from 'node:module';
-import { dirname, join } from 'node:path';
-import { existsSync } from 'node:fs';
 import { createInterface } from 'node:readline';
 import type { Readable, Writable } from 'node:stream';
 import { z } from 'zod';
 import { codexModelSchema, type Run } from '@worktreeos/shared';
+import {
+  assertAgentHost,
+  codexClientOptions,
+  isolatedCodexOverrides,
+} from './codex-policy.js';
+import { codexBinary } from './codex-binary.js';
 
 export interface CodexAvailability {
   models: NonNullable<Run['model']>[];
@@ -20,46 +23,32 @@ interface ProbeProcess {
   on(event: 'error', listener: (error: Error) => void): unknown;
   on(event: 'close', listener: () => void): unknown;
 }
-export function codexBinary() {
-  const targets: Record<string, [string, string]> = {
-    'win32-x64': ['win32-x64', 'x86_64-pc-windows-msvc'],
-    'win32-arm64': ['win32-arm64', 'aarch64-pc-windows-msvc'],
-    'linux-x64': ['linux-x64', 'x86_64-unknown-linux-musl'],
-    'linux-arm64': ['linux-arm64', 'aarch64-unknown-linux-musl'],
-    'darwin-x64': ['darwin-x64', 'x86_64-apple-darwin'],
-    'darwin-arm64': ['darwin-arm64', 'aarch64-apple-darwin'],
-  };
-  const target = targets[`${process.platform}-${process.arch}`];
-  if (!target) throw new Error('Unsupported platform');
-  const require = createRequire(import.meta.url);
-  const cliRequire = createRequire(
-    require.resolve('@openai/codex/package.json'),
-  );
-  const root = join(
-    dirname(cliRequire.resolve(`@openai/codex-${target[0]}/package.json`)),
-    'vendor',
-    target[1],
-  );
-  const name = process.platform === 'win32' ? 'codex.exe' : 'codex';
-  const modern = join(root, 'bin', name);
-  return existsSync(modern) ? modern : join(root, 'codex', name);
-}
+export { codexBinary } from './codex-binary.js';
 
 // A short-lived read-only RPC connection: no login, thread/start, turn/start, or model calls.
 export function createAvailabilityCheck(
-  launch: () => ProbeProcess = () =>
-    spawn(
+  launch: () => ProbeProcess | Promise<ProbeProcess> = async () => {
+    const env = codexClientOptions().env!;
+    const overrides = await isolatedCodexOverrides(env);
+    return spawn(
       codexBinary(),
-      ['app-server', '-c', 'mcp_servers={}', '-c', 'web_search="disabled"'],
-      { shell: false, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] },
-    ),
+      [
+        'app-server',
+        ...overrides.flatMap((value) => ['-c', value]),
+        '-c',
+        'web_search="disabled"',
+      ],
+      { env, shell: false, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] },
+    );
+  },
   timeoutMs = 10000,
 ): AvailabilityCheck {
   let pending: Promise<CodexAvailability> | undefined;
   const check: AvailabilityCheck = async () => {
     try {
+      assertAgentHost();
+      const child = await launch();
       return await new Promise<CodexAvailability>((resolve, reject) => {
-        const child = launch();
         const lines = createInterface({ input: child.stdout });
         let result: CodexAvailability | undefined;
         let bytes = 0;

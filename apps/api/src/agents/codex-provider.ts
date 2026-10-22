@@ -1,8 +1,14 @@
-import { Codex, type ThreadEvent, type ThreadOptions } from '@openai/codex-sdk';
+import {
+  Codex,
+  type CodexOptions,
+  type ThreadEvent,
+  type ThreadOptions,
+} from '@openai/codex-sdk';
 import { usageSchema, type ProviderEvent } from '@worktreeos/shared';
 import type { AgentContext, AgentProvider } from './provider.js';
 import { AppError } from '../errors.js';
 import { z } from 'zod';
+import { codexClientOptions, isolatedCodexOverrides } from './codex-policy.js';
 
 export interface CodexClient {
   startThread(options: ThreadOptions): {
@@ -17,20 +23,23 @@ export class CodexProvider implements AgentProvider {
   readonly id = 'codex' as const;
   readonly mode = 'CODEX' as const;
   constructor(
-    private readonly createClient: () => CodexClient = () =>
+    private readonly createClient: (
+      options: CodexOptions,
+      context: AgentContext,
+    ) => CodexClient | Promise<CodexClient> = async (options, context) =>
       new Codex({
-        config: {
-          // No external MCP tools, remote search, or automatic transient retries.
-          mcp_servers: {},
-          model_provider: 'openai',
-          model_providers: {
-            openai: { request_max_retries: 0, stream_max_retries: 0 },
-          },
-        },
+        ...options,
+        configOverrides: await isolatedCodexOverrides(
+          options.env!,
+          context.worktree.path,
+          context.signal,
+        ),
       }),
   ) {}
 
   async *run(context: AgentContext): AsyncIterable<ProviderEvent> {
+    context.signal.throwIfAborted();
+    const options = codexClientOptions();
     if (!context.model)
       throw new AppError(
         400,
@@ -39,11 +48,12 @@ export class CodexProvider implements AgentProvider {
       );
     let completed = false;
     try {
-      const thread = this.createClient().startThread({
+      const client = await this.createClient(options, context);
+      context.signal.throwIfAborted();
+      const thread = client.startThread({
         workingDirectory: context.worktree.path,
         model: context.model,
         sandboxMode: 'read-only',
-        approvalPolicy: 'untrusted',
         networkAccessEnabled: false,
         webSearchMode: 'disabled',
         skipGitRepoCheck: false,

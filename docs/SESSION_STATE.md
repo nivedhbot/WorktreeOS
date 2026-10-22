@@ -8,6 +8,7 @@ The current user authorized verification, fixes and pushes through milestone 10.
 - Hosted baseline run [39838180330](https://github.com/nivedhbot/WorktreeOS/actions/runs/39838180330) passed Ubuntu and quality; Windows failed because JavaScript realpath retained the runner's 8.3 temp alias while native validation expanded it.
 - Fixed test/demo fixture roots and managed worktree canonicalization with native realpath. Regression coverage asserts agreement with asynchronous native paths. Targeted Git/path/demo checks passed 25 tests; API typecheck/build and root lint passed. Symlink/junction rejection is preserved.
 - Next: Codex runtime/recursion review, dashboard refresh consistency, queued approval recovery, then complete verification and synchronized documentation. No model task was run.
+- Codex repair: the installed native CLI rejects `untrusted`, and empty MCP tables retain inherited servers. Added supported granular denial, explicit MCP disabling, disabled plugin/hook/app/sub-agent tools and nested-process rejection. Configuration-only native checks plus SDK/discovery fakes passed 16 tests; API typecheck/build and root lint passed. No authentication or model turn was used. Next: scheduler and dashboard regressions.
 
 Updated: 2026-10-22. Application version: 0.1.0.
 Workspace: `E:/WorktreeOS`; application root: `E:/WorktreeOS/WorktreeOS-Codex-Starter`.
@@ -83,7 +84,7 @@ Read `docs/RELEASE.md` for the full release checklist. Its unchecked items are r
 - Audit logging records method/route template/status/request ID rather than request bodies, headers or raw query strings. New events/SSE redact known credential patterns/structured fields while preserving actual usage. Redaction is not general secret detection; old append-only histories are not rewritten and user content remains private data.
 - Codex uses official SDK 0.163.0 and existing CLI authentication, with no key form or credential storage. On-demand native account/model discovery is bounded and does not start a model turn. Only account-visible supported models are offered; no silent fallback.
 - Real execution requires request -> queued review -> fresh acknowledgement -> atomic single-use confirmation. Direct real starts return APPROVAL_REQUIRED. Approvals expire after 15 minutes and bind task revision/objective, repo/tree, model and prerequisite context; changed/rejected/expired/consumed requests fail closed.
-- Real SDK execution uses read-only sandbox, untrusted approvals, Git checks enabled, disabled tool network/search, no MCP servers and zero configured automatic transport retries. Model transport still uses network and account usage. Unavailable interactive command approvals fail closed. No real file-writing mode is implemented.
+- Real SDK execution uses read-only sandbox, granular approval requests denied, Git checks enabled, disabled tool network/search, no MCP servers and zero configured automatic transport retries. Model transport still uses network and account usage. Unavailable interactive command approvals fail closed. No real file-writing mode is implemented.
 - UI mutation controls are disabled at widths <=760px; final review displays actual status/path/branch/patch plus manual testing guidance, never invented test success.
 
 ### Demo behavior

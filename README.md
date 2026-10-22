@@ -98,7 +98,7 @@ Use `npm run dev`, not the isolated demo. WorktreeOS reuses existing Codex CLI a
 3. In **Dependencies & approvals**, choose **Review and approve**. Review the exact objective/revision, repository, worktree path, fixed model and context/usage risk.
 4. Check the fresh acknowledgement and click **Approve and start Codex** for one run. Changed, expired, rejected or consumed approvals fail closed. There is no silent model fallback or automatic real retry.
 
-Real runs can send task/repository context to the configured model service and incur account usage. They use **read-only**, **untrusted approvals**, disabled tool network/search and no MCP servers. Model transport still requires network. Commands needing SDK approval that the app cannot supply fail closed. This release has no real file-writing agent mode. [Authentication/provider details](docs/CODEX.md) · [Approval semantics](docs/WORKFLOW.md).
+Real runs can send task/repository context to the configured model service and incur account usage. They use **read-only**, **automatic denial of approval requests**, disabled tool network/search and no MCP servers. Model transport still requires network. Commands needing SDK approval that the app cannot supply fail closed. This release has no real file-writing agent mode. [Authentication/provider details](docs/CODEX.md) · [Approval semantics](docs/WORKFLOW.md).
 
 ## Safety boundaries
 

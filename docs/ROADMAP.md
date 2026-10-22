@@ -12,7 +12,7 @@ State as of 2026-10-22: milestones 01–10 are implemented and locally verified 
 
 ## Round 2 - constrained real-agent orchestration
 
-- [x] 06 Codex adapter: official SDK, account-visible model discovery, opt-in real runs and actual thread/item/usage metadata. Read-only/untrusted execution; SDK/discovery are tested with fakes. Authenticated live execution remains unverified.
+- [x] 06 Codex adapter: official SDK, account-visible model discovery, opt-in real runs and actual thread/item/usage metadata. Read-only with denied escalation execution; SDK/discovery are tested with fakes. Authenticated live execution remains unverified.
 - [x] 07 Scheduler: bounded durable queue, total concurrency two, per-repository serialization, worktree execution guards, cancellation/timeouts, ownership lock and restart reconciliation.
 - [x] 08 Dependencies and approvals: persisted DAG/cycle prevention, revision/provider prerequisite gating, visual graph plus keyboard forms, expiring single-use request/review/confirm and manual final review. No automatic merge.
 
