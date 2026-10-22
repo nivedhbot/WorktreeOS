@@ -1,0 +1,23 @@
+{
+  "name": "@worktreeos/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "seed": "tsx src/seed.ts"
+  },
+  "dependencies": {
+    "@openai/codex-sdk": "^0.163.0",
+    "@worktreeos/shared": "*",
+    "fastify": "^5.12.7",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.0"
+  }
+}

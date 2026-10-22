@@ -1,0 +1,11 @@
+node_modules
+dist
+coverage
+test-results
+playwright-report
+package-lock.json
+.agents
+AGENTS.md
+START_HERE.md
+docs/PRODUCT.md
+prompts
