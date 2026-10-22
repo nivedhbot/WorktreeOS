@@ -9,6 +9,7 @@ The current user authorized verification, fixes and pushes through milestone 10.
 - Fixed test/demo fixture roots and managed worktree canonicalization with native realpath. Regression coverage asserts agreement with asynchronous native paths. Targeted Git/path/demo checks passed 25 tests; API typecheck/build and root lint passed. Symlink/junction rejection is preserved.
 - Next: Codex runtime/recursion review, dashboard refresh consistency, queued approval recovery, then complete verification and synchronized documentation. No model task was run.
 - Codex repair: the installed native CLI rejects `untrusted`, and empty MCP tables retain inherited servers. Added supported granular denial, explicit MCP disabling, disabled plugin/hook/app/sub-agent tools and nested-process rejection. Configuration-only native checks plus SDK/discovery fakes passed 16 tests; API typecheck/build and root lint passed. No authentication or model turn was used. Next: scheduler and dashboard regressions.
+- Scheduler repair: invalid queued real approvals now fail even behind occupied slots or blocked prerequisites. Atomic recovery guards prevent concurrent stale-lock reclamation. Twenty targeted workflow/scheduler/process tests passed, including four competing Node processes, plus API typecheck/build and lint. Next: dashboard/history and SSE regressions.
 
 Updated: 2026-10-22. Application version: 0.1.0.
 Workspace: `E:/WorktreeOS`; application root: `E:/WorktreeOS/WorktreeOS-Codex-Starter`.

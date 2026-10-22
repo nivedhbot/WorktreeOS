@@ -1,7 +1,9 @@
 import {
   closeSync,
   openSync,
+  mkdirSync,
   readFileSync,
+  rmdirSync,
   unlinkSync,
   writeFileSync,
 } from 'node:fs';
@@ -21,31 +23,45 @@ export function claimScheduler(dataDir: string) {
       error.code !== 'EEXIST'
     )
       throw error;
-    let pid: number;
+    // Serialize stale-lock reclamation across processes. Without this guard,
+    // two starters can both observe the dead PID and unlink the other's new lock.
+    const recovery = join(dataDir, 'scheduler.recovery');
     try {
-      pid = Number(readFileSync(path, 'utf8'));
+      mkdirSync(recovery);
     } catch {
       throw new Error(
-        'Unable to read scheduler.lock; another API may own this data directory',
+        'Another WorktreeOS API is reclaiming scheduler.lock. If scheduler.recovery remains after a crash, verify no API is starting before removing that empty directory.',
       );
     }
-    if (!Number.isSafeInteger(pid) || pid < 1)
-      throw new Error(
-        'Invalid scheduler.lock; verify no API is running before removing it',
-      );
-    let alive = true;
     try {
-      process.kill(pid, 0);
-    } catch (error) {
-      if (error instanceof Error && 'code' in error && error.code === 'ESRCH')
-        alive = false;
+      let pid: number;
+      try {
+        pid = Number(readFileSync(path, 'utf8'));
+      } catch {
+        throw new Error(
+          'Unable to read scheduler.lock; another API may own this data directory',
+        );
+      }
+      if (!Number.isSafeInteger(pid) || pid < 1)
+        throw new Error(
+          'Invalid scheduler.lock; verify no API is running before removing it',
+        );
+      let alive = true;
+      try {
+        process.kill(pid, 0);
+      } catch (error) {
+        if (error instanceof Error && 'code' in error && error.code === 'ESRCH')
+          alive = false;
+      }
+      if (alive)
+        throw new Error(
+          'Another WorktreeOS API owns this data directory; stop it before restarting',
+        );
+      unlinkSync(path);
+      fd = acquire();
+    } finally {
+      rmdirSync(recovery);
     }
-    if (alive)
-      throw new Error(
-        'Another WorktreeOS API owns this data directory; stop it before restarting',
-      );
-    unlinkSync(path);
-    fd = acquire();
   }
   try {
     writeFileSync(fd, String(process.pid));

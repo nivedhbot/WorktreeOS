@@ -196,9 +196,24 @@ export class RunManager {
   private pump() {
     if (this.closing) return;
     for (const run of this.store.activeRuns()) {
-      if (this.active.size >= this.config.concurrency) break;
       if (run.status !== 'queued' || this.active.has(run.id) || !run.worktreeId)
         continue;
+      // Expired or changed real consent must leave the queue even when all
+      // execution slots are occupied or a prerequisite is no longer runnable.
+      if (run.provider === 'codex') {
+        try {
+          this.store.workflow.assertRunApproval(run);
+        } catch (error) {
+          this.transition(
+            run.id,
+            'failed',
+            error instanceof AppError
+              ? error.message
+              : 'Approval validation failed; request a fresh review',
+          );
+          continue;
+        }
+      }
       if (!this.store.getWorktree(run.worktreeId)) {
         this.transition(
           run.id,
@@ -207,6 +222,7 @@ export class RunManager {
         );
         continue;
       }
+      if (this.active.size >= this.config.concurrency) continue;
       if (!this.git.canAcquireExecution(run.worktreeId)) continue;
       if (this.store.workflow.blockedBy(run.taskId, run.provider).length)
         continue;

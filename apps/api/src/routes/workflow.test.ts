@@ -381,6 +381,66 @@ describe(
           .events.at(-1).payload.message,
       ).toContain('fresh approval');
     });
+    it.each(['expired', 'prerequisite changed'] as const)(
+      'fails queued Codex with %s consent while capacity is occupied',
+      async (reason) => {
+        const parent = await task('Prerequisite');
+        const parentTree = await tree(parent);
+        const blockerTree = await tree(await task('Capacity blocker'));
+        const dependentTree = await tree(await task('Dependent', [parent.id]));
+        const completed = await confirm((await request(parentTree)).id);
+        expect((await done(completed.json().id)).status).toBe('completed');
+        invoked.mockClear();
+        await app.close();
+        app = buildApp(
+          {},
+          {
+            dataDir: fixture.dataDir,
+            provider: new MockProvider(60000),
+            codexProvider: provider,
+            codexAvailability: availability,
+            scheduler: { concurrency: 1 },
+          },
+        );
+        const blocker = await app.inject({
+          method: 'POST',
+          url: `/api/tasks/${blockerTree.taskId}/runs`,
+          payload: { worktreeId: blockerTree.id },
+        });
+        expect(blocker.statusCode).toBe(202);
+        const approval = await request(dependentTree);
+        const queued = await confirm(approval.id);
+        expect(queued.statusCode).toBe(202);
+        if (reason === 'expired') {
+          const db = new DatabaseSync(
+            join(fixture.dataDir, 'worktreeos.sqlite'),
+          );
+          try {
+            db.prepare('UPDATE approvals SET expires_at = ? WHERE id = ?').run(
+              '2000-01-01T00:00:00.000Z',
+              approval.id,
+            );
+          } finally {
+            db.close();
+          }
+        } else {
+          expect(
+            (
+              await app.inject({
+                method: 'PATCH',
+                url: `/api/tasks/${parent.id}`,
+                payload: { objective: 'Changed prerequisite' },
+              })
+            ).statusCode,
+          ).toBe(200);
+        }
+        expect((await done(queued.json().id)).status).toBe('failed');
+        expect(
+          (await app.inject(`/api/runs/${blocker.json().id}`)).json().status,
+        ).toBe('running');
+        expect(invoked).not.toHaveBeenCalled();
+      },
+    );
     it('fails a confirmation when the reviewed task changes during asynchronous model discovery', async () => {
       const t = await task();
       const w = await tree(t);
