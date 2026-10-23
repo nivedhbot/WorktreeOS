@@ -14,8 +14,8 @@ A local-first task mission-control tool for individual developers who dispatch c
 - apps/web (Vite/React), apps/api (Fastify/Node), packages/shared (Zod and shared types).
 - SQLite persists repositories, tasks, runs, events, worktrees, approvals, dependencies.
 - REST for control, SSE for event streaming. Backend process is single-user, loopback-only by default.
-- Run states: queued, preparing, awaiting_approval, running, completed, failed, canceled, interrupted.
-- Providers: MockProvider first; CodexProvider via official @openai/codex-sdk later.
+- Executing run states: queued, preparing, running, completed, failed, canceled, interrupted. Approval requests are separate records; the shared compatibility enum retains `awaiting_approval`.
+- Providers: offline MockProvider by default; opt-in read-only CodexProvider through the official @openai/codex-sdk.
 - Git worktrees are created outside the registered repository under a dedicated app-controlled base directory.
 
 ## Threat model / non-goals

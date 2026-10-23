@@ -2,6 +2,8 @@
 
 Local mission control for coding tasks: give each task a Git worktree, follow live execution, and review changes before deciding what to merge. **MOCK** works without keys. Real Codex requires a separate, single-use approval and currently uses a read-only sandbox.
 
+The repository root is the application root. Run all commands below from the directory containing this README, `package.json`, `apps/`, and `packages/`.
+
 ![Actual WorktreeOS dashboard after a completed MOCK demo](docs/images/mock-dashboard.png)
 
 Captured from the running Windows demo, 2026-10-22. The timeline is a labeled simulation; MOCK does not generate code. [Mobile capture and reproduction guide](docs/DEMO.md).
@@ -88,6 +90,8 @@ flowchart LR
 | `apps/api`        | Fastify, Node SQLite, seven transactional migrations, typed storage, guarded Git, scheduler, REST/SSE and providers |
 | `packages/shared` | Zod contracts and inferred types, compiled ESM/declarations                                                         |
 | `scripts` / `e2e` | Demo, platform verification and isolated Chromium integration fixtures                                              |
+
+`.agents/skills/` contains the project Codex skill. `docs/` contains the product, architecture, operations and release guidance; `prompts/` retains the milestone instructions. GitHub Actions runs the same root workspace commands on Windows and Ubuntu.
 
 No hosted database, remote Git service, container runtime or model account is required for MOCK. SQLite lives outside source; events and status changes commit together. A PID lock prevents two API schedulers using one data directory. [Architecture and lifecycle details](docs/ARCHITECTURE.md).
 

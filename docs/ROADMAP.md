@@ -23,7 +23,7 @@ Updated 2026-10-23. Milestones 01–10 are implemented; the completion audit pas
 
 ## Current verification
 
-Final `npm run verify` passed **133 Vitest tests in 25 files and seven Chromium E2E**, with lint/typecheck/build/format. The isolated MOCK restart smoke also passed; `npm audit` reported zero vulnerabilities. The audit covers native configuration, concurrent ownership, approval expiry, editing/history and replay regressions. Exact evidence and limitations are in [SESSION_STATE](SESSION_STATE.md).
+Root `npm run verify` passed **135 Vitest tests in 25 files and seven Chromium E2E**, with lint/typecheck/build/format. The two added tests cover indexed worktree lookup and terminal-only dashboard refresh; the earlier milestone audit had 133 tests. The isolated MOCK restart smoke passed; `npm audit` reported zero vulnerabilities. Exact evidence and the remaining local cleanup limitation are in [SESSION_STATE](SESSION_STATE.md).
 
 Hosted [run 39896934560](https://github.com/nivedhbot/WorktreeOS/actions/runs/39896934560) passed quality and Windows/Ubuntu integration jobs. The older baseline Windows failure was traced to an 8.3 temp-directory alias and fixed without relaxing path protections.
 
@@ -35,3 +35,7 @@ Hosted [run 39896934560](https://github.com/nivedhbot/WorktreeOS/actions/runs/39
 - [ ] Owner validates private backup/restore and screenshot content before a tagged release. No installer, recording or release tag is produced by these milestones.
 
 The repository is `nivedhbot/WorktreeOS`, branch `main`. Commit/push authorization was explicitly supplied for this audit. No milestone 11 is defined. Future writable agents, packaging or remote/multi-user operation require separate design and scope; current consent and sandbox boundaries remain in place.
+
+## Repository maintenance
+
+The application and npm workspace now run directly from the repository root. The parent Git repository retains the published application history. Direct package dependencies, indexed worktree lookups and focused dashboard refreshes are covered by new tests. See [SESSION_STATE](SESSION_STATE.md) for the current verification and cleanup status.

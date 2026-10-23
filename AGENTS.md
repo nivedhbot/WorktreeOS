@@ -12,8 +12,8 @@ WorktreeOS is a local-first desktop-browser dashboard for coordinating AI coding
 - Testing: Vitest/unit and integration; Playwright end-to-end at milestone 09.
 
 ## Project standards
-- Read docs/PRODUCT.md, docs/ROADMAP.md and docs/SESSION_STATE.md, then only inspect files relevant to the requested milestone.
-- Implement exactly one requested milestone per turn. No surprise features, migrations, framework changes, or broad speculative refactors.
+- Work from the repository root containing this file. Read docs/PRODUCT.md, docs/ROADMAP.md and docs/SESSION_STATE.md, then inspect files relevant to the requested task.
+- Follow the user's requested scope, whether it is a numbered milestone or repository maintenance. No surprise features, migrations, framework changes, or broad speculative refactors.
 - Prioritize a working vertical slice over abstractions and placeholders. Mocked runs must be visibly labeled MOCK; never display fake real-agent output.
 - Use safe cross-platform Node process APIs. Never compose Git or Codex commands from untrusted input in a shell string.
 - Git operations require an explicit allowed repository root. Canonicalize paths and prohibit traversal/escaping through symlinks.
@@ -26,6 +26,7 @@ WorktreeOS is a local-first desktop-browser dashboard for coordinating AI coding
 
 ## Workflow
 - Reuse existing code and avoid duplicate utilities.
+- Install with `npm ci`; use the root npm workspace scripts. Keep dependencies declared by the package that imports them.
 - Work autonomously on assigned tasks, using the existing project instructions and reasonable implementation judgment. Ask only when a material decision or authorization is genuinely missing; do not repeat approval requests for actions already authorized.
 - Add or update targeted tests for behavior changes. Run targeted tests first; run lint, typecheck and build for the affected workspace.
 - If checks fail, diagnose and repair in the same milestone. Do not endlessly rerun failing commands without changing anything.

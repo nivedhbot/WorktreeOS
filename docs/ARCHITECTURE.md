@@ -2,6 +2,8 @@
 
 WorktreeOS is a single-user local application. The browser controls a loopback API; the API owns persistence, Git operations and execution. MOCK is usable offline after dependency installation. Real Codex is opt-in and read-only.
 
+The repository root contains `apps/`, `packages/`, `docs/`, `scripts/`, `e2e/`, `.agents/` and root npm/Git/CI configuration. Run `npm ci` and all workspace commands from this root. CI uses the same layout; no nested starter directory is part of the application.
+
 ## Components and ownership
 
 ```mermaid
@@ -37,6 +39,8 @@ SQLite uses WAL and foreign keys. Data defaults to `~/.worktreeos/worktreeos.sql
 Repository records identify canonical local roots. Tasks retain editable titles/objectives and revision numbers. Each run saves its task snapshot, provider, worktree, status and available real thread/usage metadata. `execution_provider` is authoritative; the legacy `runs.provider` column keeps its original MOCK-only constraint for migration compatibility. Run history is ordered by creation time and SQLite insertion order.
 
 Status transitions and their events commit together. Per-run event sequences increase monotonically; SQL triggers prohibit event UPDATE/DELETE. Partial unique indexes prevent overlapping queued/active runs for the same task or worktree. Dependency edits commit transactionally and reject missing references, self-edges and cycles. Approval fingerprints bind the reviewed revision, model, worktree and prerequisite state.
+
+Worktree reads by ID use the primary key; reads by task use the partial active-task index. Listing remains ordered for the dashboard. This keeps execution validation and task worktree lookups proportional to the requested row rather than scanning all worktrees.
 
 ## Execution lifecycle
 
