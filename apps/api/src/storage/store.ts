@@ -46,6 +46,8 @@ function parseRun(row: Record<string, unknown>) {
 }
 const eventColumns =
   'id, run_id AS runId, sequence, type, payload, created_at AS createdAt';
+const worktreeColumns =
+  'id, task_id AS taskId, repository_id AS repositoryId, branch, path, created_at AS createdAt, removed_at AS removedAt';
 
 export class Store {
   readonly workflow: WorkflowStore;
@@ -532,27 +534,35 @@ export class Store {
   }
 
   listWorktrees(repositoryId?: string) {
-    const columns =
-      'id, task_id AS taskId, repository_id AS repositoryId, branch, path, created_at AS createdAt, removed_at AS removedAt';
     const rows = repositoryId
       ? this.database
           .prepare(
-            `SELECT ${columns} FROM worktrees WHERE removed_at IS NULL AND repository_id = ? ORDER BY created_at, id`,
+            `SELECT ${worktreeColumns} FROM worktrees WHERE removed_at IS NULL AND repository_id = ? ORDER BY created_at, id`,
           )
           .all(repositoryId)
       : this.database
           .prepare(
-            `SELECT ${columns} FROM worktrees WHERE removed_at IS NULL ORDER BY created_at, id`,
+            `SELECT ${worktreeColumns} FROM worktrees WHERE removed_at IS NULL ORDER BY created_at, id`,
           )
           .all();
     return rows.map((row) => worktreeSchema.parse(row));
   }
 
   getWorktree(id: string) {
-    return this.listWorktrees().find((record) => record.id === id);
+    const row = this.database
+      .prepare(
+        `SELECT ${worktreeColumns} FROM worktrees WHERE id = ? AND removed_at IS NULL`,
+      )
+      .get(id);
+    return row ? worktreeSchema.parse(row) : undefined;
   }
   getTaskWorktree(taskId: string) {
-    return this.listWorktrees().find((record) => record.taskId === taskId);
+    const row = this.database
+      .prepare(
+        `SELECT ${worktreeColumns} FROM worktrees WHERE task_id = ? AND removed_at IS NULL`,
+      )
+      .get(taskId);
+    return row ? worktreeSchema.parse(row) : undefined;
   }
   markWorktreeRemoved(id: string) {
     this.database

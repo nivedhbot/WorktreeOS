@@ -18,6 +18,46 @@ describe('file-backed storage', () => {
     vi.unstubAllEnvs();
     fixture.cleanup();
   });
+  it('looks up only active worktrees by ID or task', () => {
+    const repo = store.createRepository({
+      name: 'Lookup',
+      path: fixture.repoPath,
+    });
+    const firstTask = store.createTask({
+      repositoryId: repo.id,
+      title: 'First',
+      objective: 'First objective',
+      provider: 'mock',
+    });
+    const secondTask = store.createTask({
+      repositoryId: repo.id,
+      title: 'Second',
+      objective: 'Second objective',
+      provider: 'mock',
+    });
+    const first = store.saveWorktree({
+      id: randomUUID(),
+      taskId: firstTask.id,
+      repositoryId: repo.id,
+      branch: 'worktreeos/first',
+      path: join(fixture.root, 'first'),
+      createdAt: new Date().toISOString(),
+      removedAt: null,
+    });
+    const second = store.saveWorktree({
+      ...first,
+      id: randomUUID(),
+      taskId: secondTask.id,
+      branch: 'worktreeos/second',
+      path: join(fixture.root, 'second'),
+    });
+    expect(store.getWorktree(first.id)).toEqual(first);
+    expect(store.getTaskWorktree(secondTask.id)).toEqual(second);
+    store.markWorktreeRemoved(first.id);
+    expect(store.getWorktree(first.id)).toBeUndefined();
+    expect(store.getTaskWorktree(firstTask.id)).toBeUndefined();
+    expect(store.getWorktree(second.id)).toEqual(second);
+  });
   it('orders history by insertion when runs share a millisecond timestamp', () => {
     const repo = store.createRepository({
       name: 'Example',
