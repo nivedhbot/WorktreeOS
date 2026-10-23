@@ -1,44 +1,37 @@
 # WorktreeOS roadmap
 
-State as of 2026-10-22: milestones 01–10 are implemented and locally verified on Windows. Public release and cross-platform evidence are separate pending checks. See [SESSION_STATE.md](SESSION_STATE.md) for architecture, files, Git limitations and exact next steps.
+Updated 2026-10-23. Milestones 01–10 are implemented; the completion audit passed local verification. Existing functionality was inspected and retained. [SESSION_STATE](SESSION_STATE.md) records actual results, fixes and Git delivery; [ARCHITECTURE](ARCHITECTURE.md) describes the system.
 
-## Round 1 - working mock MVP
+## Round 1 — working mock MVP
 
-- [x] 01 Foundation: npm workspaces, strict TypeScript, React/Vite/Tailwind/shadcn-style shell, Fastify API, shared Zod, lint/typecheck/tests/build and successful UI/API connectivity.
-- [x] 02 Persistence and REST: file-backed SQLite/migrations, repository/task create/list/detail/edit, canonical local Git path validation, meaningful errors and isolated durability/inject tests. Startup seeds nothing.
-- [x] 03 Git worktrees: guarded create/list/status/files/diff/explicit clean removal, branches retained, path/branch/mutation protections and real temporary-Git tests.
-- [x] 04 MOCK and SSE: labeled simulation, durable state and append-only events, live/replayable stream, cancel/retry and API integration tests.
-- [x] 05 Dashboard: repository/task workflow, board/list/search/filter, worktree/run/history controls, live timeline/log, tracked patch review and mobile read-only behavior.
+- [x] 01 Foundation: strict TypeScript workspaces, React/Vite/Tailwind/Radix UI, Fastify, shared Zod and build/check tooling.
+- [x] 02 Persistence and REST: SQLite migrations, repository/task create/list/detail/edit, canonical path validation, durable storage and useful errors.
+- [x] 03 Git worktrees: guarded creation, status/files/diff inspection and explicit clean removal; original checkout and retained branches protected by real-Git tests.
+- [x] 04 MOCK engine: task snapshots, durable lifecycle, append-only events, live/replay SSE, cancellation, explicit retry and execution history.
+- [x] 05 Dashboard: repository registration/rename, task creation/editing, board/list/search/filter, run controls, timeline/logs, Git inspection and responsive read-only mobile views.
 
-## Round 2 - constrained real-agent orchestration
+## Round 2 — constrained real-agent orchestration
 
-- [x] 06 Codex adapter: official SDK, account-visible model discovery, opt-in real runs and actual thread/item/usage metadata. Read-only with denied escalation execution; SDK/discovery are tested with fakes. Authenticated live execution remains unverified.
-- [x] 07 Scheduler: bounded durable queue, total concurrency two, per-repository serialization, worktree execution guards, cancellation/timeouts, ownership lock and restart reconciliation.
-- [x] 08 Dependencies and approvals: persisted DAG/cycle prevention, revision/provider prerequisite gating, visual graph plus keyboard forms, expiring single-use request/review/confirm and manual final review. No automatic merge.
+- [x] 06 Codex: official SDK, account-visible model discovery, explicit manual approval, streaming thread/items/actual usage and persisted history. Read-only sandbox, denied escalation, disabled inherited integrations and recursion guard. Mock remains the default; no paid model test was run.
+- [x] 07 Scheduler: bounded durable queue, concurrency two across repositories, serialization per repository, task/worktree locks, cancellation/timeouts, explicit retries, process ownership and restart recovery without real-run replay.
+- [x] 08 Workflow: persisted DAG/cycle prevention, visual and keyboard controls, provider/revision prerequisite gating, expiring single-use approval and manual final review. No automatic merge.
 
-## Round 3 - validation and local delivery
+## Round 3 — validation and local delivery
 
-- [x] 09 QA/security: real-app Chromium E2E, local Host/Origin/socket guards, permission/path/race/failure tests, sanitized audit/events, actual Windows process-recovery coverage and platform verify scripts.
-- [x] 10 Shipping polish: accurate README, mock-first PowerShell setup, deterministic isolated fixture/demo/restart smoke, actual inspected desktop/mobile screenshots, keyboard/loading/responsive audit, CI workflow definition, runbook, recording guide, license suggestion and release checklist. Clean-source npm ci/build/browser demo verified; no public clone or hosted CI success is implied.
+- [x] 09 QA: unit/integration and real-app Chromium tests cover lifecycle, Git isolation, concurrency, cancellation/recovery, API validation, SSE, failures and security boundaries. Windows temp-path alias and concurrent stale-lock recovery defects were repaired.
+- [x] 10 Polish: edit/history consistency, accessible forms and responsive states, architecture/README/runbook, environment example, actual screenshots and demo guide, isolated MOCK restart smoke, Windows/Ubuntu GitHub Actions and production readiness checklist.
 
-## Latest recorded verification
+## Current verification
 
-Milestone 10: `npm run verify` exited 0; **120 Vitest tests in 23 files** and **6 Chromium E2E**, zero retries, passed along with lint/typecheck/build/format. `npm run demo:smoke` preserved MOCK run/events across API restart; a separate clean-source install and interactive browser demo passed. `npm audit` reported zero vulnerabilities then. Final demo runner changes received typecheck/interactive/smoke checks; docs received formatting/link checks.
+Final `npm run verify` passed **133 Vitest tests in 25 files and seven Chromium E2E**, with lint/typecheck/build/format. The isolated MOCK restart smoke also passed; `npm audit` reported zero vulnerabilities. The audit covers native configuration, concurrent ownership, approval expiry, editing/history and replay regressions. Exact evidence and limitations are in [SESSION_STATE](SESSION_STATE.md).
 
-These are recorded prior-session results, not new application checks run by the docs-only handoff. Current handoff preserves application code and changes only the state/roadmap documents.
+Hosted [run 39896934560](https://github.com/nivedhbot/WorktreeOS/actions/runs/39896934560) passed quality and Windows/Ubuntu integration jobs. The older baseline Windows failure was traced to an 8.3 temp-directory alias and fixed without relaxing path protections.
 
-## Pending release work (not new numbered milestones)
+## Release choices and limitations
 
-- [ ] Owner chooses the application Git root/remote and authorizes version-control delivery. Current application root is not a Git repository; no branch/HEAD/remote/diff can be reported.
-- [ ] Owner adopts a license and copyright details; MIT is suggested, no LICENSE grant exists yet.
-- [ ] Execute the existing GitHub Actions workflow in the intended hosted repository and inspect Windows/Ubuntu results; workflow definition alone is not passing CI.
-- [ ] Verify Linux or other target platforms before claiming support. Firefox/WebKit and macOS execution remain unverified.
-- [ ] Complete selected release checks: screenshot privacy, actual optional GIF/video, backup/restore and deeper screen-reader/accessibility review. No installer/desktop package or public release has been produced.
-- [ ] Optional authenticated read-only Codex smoke only after explicit manual consent; never in default demo or CI.
-- [ ] Assess locked ESLint deprecation and other dependency maintenance under a separately scoped request; no dependency or policy changes are part of the handoff.
+- [ ] Owner selects a license/copyright; MIT is suggested, with no license grant invented.
+- [ ] Optional authenticated read-only Codex smoke requires a separate manual action. No paid execution or native authenticated cancellation is claimed as tested.
+- [ ] macOS, Firefox/WebKit and comprehensive screen-reader/WCAG review remain unverified.
+- [ ] Owner validates private backup/restore and screenshot content before a tagged release. No installer, recording or release tag is produced by these milestones.
 
-[RELEASE.md](RELEASE.md) contains the detailed owner/release checklist. [SESSION_STATE.md](SESSION_STATE.md) records resolved failures, warnings, the blocked older temp-fixture cleanup and unverified environments.
-
-## Scope rule and next action
-
-No implementation milestone remains in the current plan; `prompts/10-polish.md` is complete. Await explicit direction for the pending release choices or a new scoped task. Do not invent milestone 11, add features, change sandbox/approval rules, execute a real agent or publish automatically. Preserve existing code during documentation maintenance.
+The repository is `nivedhbot/WorktreeOS`, branch `main`. Commit/push authorization was explicitly supplied for this audit. No milestone 11 is defined. Future writable agents, packaging or remote/multi-user operation require separate design and scope; current consent and sandbox boundaries remain in place.

@@ -145,31 +145,33 @@ describe(
         }),
       ).toBeInTheDocument();
       click(screen.getByRole('button', { name: 'Create worktree' }));
+      // Repeated full accessibility-tree queries can starve the in-process
+      // HTTP/Git work on jsdom. Observe the existing button's state instead.
+      const startButton = screen.getByRole('button', {
+        name: 'Start MOCK run',
+      });
+      await waitFor(() => expect(startButton).toBeEnabled(), { timeout: 5000 });
+      click(startButton);
+      const runPanel = screen.getByRole('region', {
+        name: 'Inspect a real local run',
+      });
       await waitFor(
         () =>
-          expect(
-            screen.getByRole('button', { name: 'Start MOCK run' }),
-          ).toBeEnabled(),
-        { timeout: 5000 },
+          expect(runPanel).toHaveTextContent(
+            'MOCK: simulated tool inspection; no command executed',
+          ),
+        { timeout: 6000 },
       );
-      click(screen.getByRole('button', { name: 'Start MOCK run' }));
-      expect(
-        await screen.findByText(
-          'MOCK: simulated tool inspection; no command executed',
-          {},
-          { timeout: 6000 },
-        ),
-      ).toBeInTheDocument();
-      expect(
-        await screen.findByText(
-          'MOCK simulation completed; no real agent was executed',
-          {},
-          { timeout: 6000 },
-        ),
-      ).toBeInTheDocument();
+      await waitFor(
+        () =>
+          expect(runPanel).toHaveTextContent(
+            'MOCK simulation completed; no real agent was executed',
+          ),
+        { timeout: 6000 },
+      );
       await waitFor(() =>
         expect(
-          screen.queryByRole('button', { name: 'Cancel run' }),
+          within(runPanel).queryByRole('button', { name: 'Cancel run' }),
         ).not.toBeInTheDocument(),
       );
       const listed = await app.inject('/api/worktrees');
@@ -183,12 +185,13 @@ describe(
         'Preserve this untracked file\n',
       );
       click(screen.getByRole('tab', { name: 'Changes' }));
+      await waitFor(
+        () =>
+          expect(runPanel).toHaveTextContent('+A real change for inspection'),
+        { timeout: 5000 },
+      );
       expect(
-        await screen.findByRole(
-          'region',
-          { name: 'Git diff' },
-          { timeout: 5000 },
-        ),
+        within(runPanel).getByRole('region', { name: 'Git diff' }),
       ).toHaveTextContent('+A real change for inspection');
       expect(
         screen.getByText('new-file.txt', { selector: 'code' }),

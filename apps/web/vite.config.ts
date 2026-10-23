@@ -19,6 +19,11 @@ export default defineConfig(({ mode }) => {
       environment: 'jsdom',
       setupFiles: ['./src/test/setup.ts'],
       restoreMocks: true,
+      // Full dashboard accessibility queries and real-Git integration share
+      // this suite. Bound worker contention on Windows and small CI runners.
+      maxWorkers: 1,
+      testTimeout: 15000,
+      hookTimeout: 20000,
     },
   };
 });

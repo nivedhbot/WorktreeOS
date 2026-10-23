@@ -1,22 +1,47 @@
-# Release checklist
+# Production readiness and release checklist
 
-Milestone 10 prepares local delivery; it does not claim a public release, hosted CI run or authenticated model test.
+WorktreeOS 0.1.0 targets single-user local use. Milestones 01–10 deliver the application and its verification tooling. GitHub synchronization is authorized for this development audit; a tagged release, license adoption and authenticated model smoke are separate owner choices.
 
-- [ ] Owner selects a license and supplies the correct copyright holder/year. **Suggestion: MIT**, a simple permissive portfolio license; review its terms/dependency notices before adoption. This suggestion makes no license grant; no LICENSE file is invented on the owner's behalf.
-- [ ] Confirm repository root, remote, version and scope. This workspace has no Git history; do not advertise a remote clone URL or CI badge until they exist.
-- [ ] From a fresh checkout, follow README: `npm ci`, `npm run demo`, create worktree and complete MOCK without keys. Stop cleanly. Run `npm run demo:smoke` to verify persisted run/events across API restart.
-- [ ] Run `npm run verify` and `npm audit`; record actual versions/counts/failures in SESSION_STATE. Do not label unexecuted platforms/browsers as passed.
-- [ ] Push the reviewed workflow to the intended hosted repository; inspect Windows and Ubuntu jobs. CI targets Node 24, uses read-only repository permissions, installs from the lockfile and requires no model secrets.
-- [ ] Review dependencies/audit findings and preserve local Host/Origin guards, sandbox and consent settings. Do not enable a remote listener.
-- [ ] Check empty/loading/error states, skip link, dialog focus/return, validation help, graph text alternative and read-only 320–760px views. Focused Chromium checks are included; comprehensive WCAG/screen-reader certification is not claimed.
-- [ ] Review desktop/mobile PNGs and any recorded GIF/video. Inspect private paths/content, preserve MOCK disclosures and record provenance. Never publish a test-written patch as agent output.
-- [ ] Confirm .env, SQLite/WAL, logs, authentication, traces, node_modules and builds are excluded. Review ignored artifacts separately before sharing.
-- [ ] Review README/QA/CODEX/SESSION_STATE limits. Authenticated Codex smoke remains optional, separately consented and outside demo/CI.
-- [ ] Check stop/restart/backups and lock behavior on target platforms. Archive a stopped data snapshot before upgrades; no downgrade migration promise is made.
-- [ ] Review the final diff, then explicitly choose the commit/tag/release. No automatic merge, push, upload or publication is included.
+## Implemented safeguards
+
+- [x] Loopback API with socket/Host/Origin guards and sanitized request errors.
+- [x] Canonical repository/worktree paths, fixed Git arguments, isolated branches and dirty-tree removal refusal.
+- [x] Durable SQLite migrations, append-only events and atomic status transitions.
+- [x] Bounded concurrency/queue, cancellation/timeouts, single scheduler ownership and restart recovery.
+- [x] Default MOCK execution without model credentials; explicit expiring single-use real approval.
+- [x] Official Codex SDK with read-only sandbox, denied escalation, disabled inherited integrations and recursion guards.
+- [x] Accessible dialogs/validation, keyboard graph alternatives and responsive read-only mobile controls.
+- [x] README onboarding, environment example, architecture, operations/backups and deterministic demo instructions.
+- [x] GitHub Actions installs the lockfile and runs quality, Windows/Ubuntu tests, build, MOCK restart smoke and Chromium without model secrets.
+
+## Verification and delivery gates
+
+- [x] Confirm repository and branch: [nivedhbot/WorktreeOS](https://github.com/nivedhbot/WorktreeOS), `main`, version 0.1.0.
+- [x] Inspect hosted Windows/Ubuntu success: [run 39896934560](https://github.com/nivedhbot/WorktreeOS/actions/runs/39896934560). Latest-head evidence is recorded in [SESSION_STATE](SESSION_STATE.md).
+- [x] Review dependency audit: zero vulnerabilities reported on 2026-10-23; this is dated evidence, not a future guarantee.
+- [x] Final local `npm run verify` passed 133 Vitest tests and seven Chromium E2E plus all quality/build checks; `npm run demo:smoke` preserved completed MOCK history through restart. Evidence is recorded in SESSION_STATE.
+- [ ] Before a tagged release, inspect hosted jobs at the chosen release commit. Do not infer success from a workflow definition or an earlier commit. Development delivery checks the final pushed HEAD separately.
+- [ ] Owner chooses a license and copyright holder/year. **Suggestion: MIT**; no license grant is invented. Review dependency notices before adoption.
+- [ ] Review screenshots/recordings for private paths/content and preserve MOCK labels. Existing PNGs show a disposable Windows demo; no GIF/video is claimed.
+- [ ] Validate a private stopped backup/restore with original repository/worktree paths on the intended machine. Database recovery tests are not a complete disaster-recovery exercise.
+- [ ] Perform any required macOS, Firefox/WebKit and deeper screen-reader/WCAG review before claiming that support.
+- [ ] Optional authenticated read-only Codex smoke requires a separate manual request/review/confirm action. Native authenticated cancellation and model availability/quota remain unverified.
+- [ ] Choose a version tag/release or desktop packaging scope separately. No remote/multi-user deployment or writable agent mode is included.
+
+## Reproduce locally
+
+```powershell
+npm.cmd ci
+npm.cmd exec -- playwright install chromium
+npm.cmd run verify
+npm.cmd run demo:smoke
+npm.cmd audit
+```
+
+For interactive acceptance, `npm.cmd run demo`, open its printed URL, create the managed worktree and complete MOCK. Inspect Timeline/Changes/Final review and reload history; Enter stops the demo. It uses fresh isolated data, no user repositories or account discovery.
+
+Review `.gitignore` before publishing: local environment files, SQLite/WAL, logs, keys, builds, dependencies and browser reports are excluded. Ignoring a file does not remove it from existing Git history. Keep real user data private and review any deliberately added artifact.
 
 ## CI structure
 
-[ci.yml](../.github/workflows/ci.yml) runs on push, pull request and manual dispatch. Ubuntu quality checks run lint/typecheck/format. Windows/Ubuntu integration jobs run Vitest, a full build through demo:smoke, durable MOCK acceptance, Chromium installation and E2E. Failure artifacts expire after seven days. It follows official [setup-node](https://github.com/actions/setup-node) and [Playwright CI](https://playwright.dev/docs/ci) guidance.
-
-Local Windows verification is evidence for this checkout. Hosted workflow and Linux success remain pending actual execution; a workflow file alone is not a passing result.
+[ci.yml](../.github/workflows/ci.yml) runs on push, pull request and manual dispatch with read-only repository permissions. Ubuntu quality runs lint/typecheck/format. Windows/Ubuntu integration jobs run Vitest, production build through demo smoke, durable MOCK acceptance and Chromium E2E. Failure artifacts expire after seven days. No automatic model calls, application merges or force pushes occur.

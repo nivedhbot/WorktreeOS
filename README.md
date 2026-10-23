@@ -8,11 +8,13 @@ Captured from the running Windows demo, 2026-10-22. The timeline is a labeled si
 
 ## Windows PowerShell quickstart
 
-Install **Node.js 24 LTS**, npm, and Git on PATH. Minimum supported Node is 22.13; CI targets Node 24. From a fresh checkout, change to the directory containing this README and package.json:
+Install **Node.js 24 LTS**, npm, and Git on PATH. Minimum supported Node is 22.13; CI targets Node 24. Clone the repository, then install and start the isolated demo:
 
 ```powershell
 node --version
 git --version
+git clone https://github.com/nivedhbot/WorktreeOS.git
+Set-Location WorktreeOS
 npm.cmd ci
 npm.cmd run demo
 ```
@@ -87,7 +89,7 @@ flowchart LR
 | `packages/shared` | Zod contracts and inferred types, compiled ESM/declarations                                                         |
 | `scripts` / `e2e` | Demo, platform verification and isolated Chromium integration fixtures                                              |
 
-No hosted database, remote Git service, container runtime or model account is required for MOCK. SQLite lives outside source; events and status changes commit together. A PID lock prevents two API schedulers using one data directory.
+No hosted database, remote Git service, container runtime or model account is required for MOCK. SQLite lives outside source; events and status changes commit together. A PID lock prevents two API schedulers using one data directory. [Architecture and lifecycle details](docs/ARCHITECTURE.md).
 
 ## Optional Codex: manual consent
 
@@ -118,7 +120,7 @@ npm.cmd run demo:smoke
 
 `verify` runs lint, strict typechecking, Vitest, production build, Chromium E2E and formatting. Individual commands: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `npm run test:e2e`, `npm run format:check`. Platform wrappers: `./scripts/verify.ps1` and `bash scripts/verify.sh`. Linux browser dependencies: `npm exec -- playwright install --with-deps chromium`.
 
-[GitHub Actions](.github/workflows/ci.yml) defines quality checks plus Windows/Ubuntu test/build/demo/browser jobs on Node 24, without model credentials, following [setup-node](https://github.com/actions/setup-node) and [Playwright CI](https://playwright.dev/docs/ci) guidance. Hosted CI success is not claimed until that workflow actually runs. Local evidence is recorded in [SESSION_STATE](docs/SESSION_STATE.md); Windows Chromium results do not imply Linux, other-browser or authenticated model verification.
+[GitHub Actions](.github/workflows/ci.yml) defines quality checks plus Windows/Ubuntu test/build/demo/browser jobs on Node 24, without model credentials, following [setup-node](https://github.com/actions/setup-node) and [Playwright CI](https://playwright.dev/docs/ci) guidance. Windows and Ubuntu jobs passed in [hosted run 39896934560](https://github.com/nivedhbot/WorktreeOS/actions/runs/39896934560). Current evidence is recorded in [SESSION_STATE](docs/SESSION_STATE.md). Chromium results do not imply other-browser or authenticated model verification.
 
 ## Demo, operations and release
 
@@ -127,4 +129,4 @@ npm.cmd run demo:smoke
 - [Release checklist and license suggestion](docs/RELEASE.md)
 - [API](docs/API.md) · [Worktrees](docs/WORKTREES.md) · [Runs](docs/RUNS.md) · [Scheduler](docs/SCHEDULER.md) · [Dashboard](docs/DASHBOARD.md)
 
-A project license has not been selected; review the release checklist before public distribution. No CI badge, GIF or authenticated model result is presented as verified.
+A project license has not been selected; review the release checklist before public distribution. No tagged release, installer, GIF or authenticated model result is claimed.

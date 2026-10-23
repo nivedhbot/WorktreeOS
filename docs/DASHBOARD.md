@@ -1,6 +1,6 @@
 # Functional dashboard (milestone 05)
 
-Run `npm install` and `npm run dev` from the project root, then open http://127.0.0.1:5173. Node 22.13+ and Git on PATH are required. The backend remains bound to loopback and uses the existing SQLite data directory. No external model credentials are needed.
+Run `npm ci` and `npm run dev` from the project root, then open http://127.0.0.1:5173. Node 22.13+ and Git on PATH are required. The backend remains bound to loopback and uses the existing SQLite data directory. No external model credentials are needed.
 
 ## First local workflow
 
@@ -20,7 +20,7 @@ The sidebar shows the current repository and its tasks. The task panel supports 
 
 API responses are parsed with shared Zod contracts. Network, server validation, Git state, and stream errors have visible feedback and retry controls. Repository data refreshes every ten seconds and after actions. Run status events update the UI immediately and trigger a REST refresh. An older REST snapshot cannot regress a completed/canceled/failed run back to active.
 
-The SSE client loads persisted history before subscribing, deduplicates event UUIDs, orders by sequence, reconnects from its last verified cursor, and closes on terminal states or task selection changes. Invalid or cross-run streamed events are rejected. Connection loss is shown as reconnecting rather than successful completion. Selecting a different task cancels stale requests/subscriptions.
+The SSE client loads persisted history before subscribing, ignores duplicate or older sequences, reconnects from its last verified cursor, and closes on terminal states or task selection changes. Invalid status payloads and cross-run streamed events are rejected. Connection loss is shown as reconnecting rather than successful completion. Selecting a different task cancels stale requests/subscriptions.
 
 Forms use shared validation, labeled fields, announced errors, and editable shadcn-style Radix dialogs with keyboard focus handling. Inspection tabs use Radix keyboard navigation. The layout stacks at narrower widths. At 760px and below, mobile inspection remains available while mutation controls are disabled with an explanatory read-only notice. CSS animations honor reduced-motion preferences.
 
