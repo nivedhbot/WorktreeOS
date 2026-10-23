@@ -8,13 +8,13 @@ Updated 2026-10-23. Application root: `E:/WorktreeOS`. Repository: [nivedhbot/Wo
 - Root `npm ci` installed 412 packages. Node is 24.22.0 and npm is 11.19.1. `npm audit --json` reported zero vulnerabilities. The installed dependencies were already at their compatible wanted versions; no major upgrade or npm CLI change was needed. The root now declares its direct `vite` use and the web package declares its direct `zod` use.
 - Worktree ID/task lookups now query indexed rows instead of reading the full list. The dashboard refreshes repository data when a run reaches a terminal state instead of after every running status event. Targeted storage and hook tests cover both changes.
 - Root `.gitignore` excludes generated caches, local databases, environment files, logs, reports, build outputs and demo data. An obsolete starter guide and an untracked duplicate of the tracked Codex skill were removed. The user-owned root playbook and demo data were preserved.
-- The old `WorktreeOS-Codex-Starter` directory still holds its former `.git`, `node_modules` and generated test reports. Root `node-compile-cache` and `tsx-Sathish` also remain locally. Automatic approval review rejected recursive removal with “blocked by policy”; these paths are ignored by the active Git repository. No alternative deletion method was used.
+- The old `WorktreeOS-Codex-Starter` directory still holds its former `.git`, `node_modules` and generated test reports. Root `node-compile-cache` and `tsx-Sathish` also remain locally. Automatic approval review rejected recursive removal with “blocked by policy”; the caches are ignored, while the old starter appears as one untracked directory. No alternative deletion method was used.
 
 ## Verification
 
 Before maintenance, `npm run verify` passed in the nested application: 133 Vitest tests (8 shared, 103 API, 22 web), seven Chromium scenarios, lint, typecheck, build and formatting. Final root `npm run verify` passed 135 Vitest tests (8 shared, 104 API, 23 web), seven Chromium scenarios, lint, typecheck, production build and formatting. The two new tests cover indexed worktree lookup and terminal-only dashboard refresh. Root `npm ci`, isolated `npm run demo:smoke` with MOCK persistence across API restart, and `npm audit --json` also passed. No Codex discovery or paid model call was made during the smoke.
 
-The last published milestone run [39896934560](https://github.com/nivedhbot/WorktreeOS/actions/runs/39896934560) passed quality and Windows/Ubuntu integration at an earlier commit. It is not evidence for the current working tree. See [QA](QA.md) and [ARCHITECTURE](ARCHITECTURE.md) for test coverage and system boundaries.
+The pushed maintenance commit `9f3f37e` passed [GitHub run 39944320327](https://github.com/nivedhbot/WorktreeOS/actions/runs/39944320327): quality and Windows/Ubuntu integration jobs all succeeded. See [QA](QA.md) and [ARCHITECTURE](ARCHITECTURE.md) for test coverage and system boundaries.
 
 ## Operational boundaries
 
