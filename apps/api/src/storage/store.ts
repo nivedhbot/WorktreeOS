@@ -488,12 +488,23 @@ export class Store {
         .run(JSON.stringify(usageSchema.parse(data.usage)), id);
   }
 
-  listEvents(runId: string) {
+  listEvents(runId: string, since?: string) {
+    const cursor = since
+      ? this.database
+          .prepare('SELECT sequence FROM events WHERE id = ? AND run_id = ?')
+          .get(since, runId)
+      : undefined;
+    if (since && !cursor)
+      throw new AppError(
+        404,
+        'EVENT_NOT_FOUND',
+        'Event cursor does not belong to this run',
+      );
     return this.database
       .prepare(
-        `SELECT ${eventColumns} FROM events WHERE run_id = ? ORDER BY sequence`,
+        `SELECT ${eventColumns} FROM events WHERE run_id = ? AND sequence > ? ORDER BY sequence`,
       )
-      .all(runId)
+      .all(runId, Number(cursor?.sequence ?? 0))
       .map((row) =>
         eventSchema.parse({
           ...row,

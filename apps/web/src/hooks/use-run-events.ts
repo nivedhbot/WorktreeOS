@@ -32,6 +32,7 @@ export function useRunEvents(
     let source: EventSource | undefined;
     let reconnect: ReturnType<typeof setTimeout> | undefined;
     let cursor: string | undefined;
+    let sequence = 0;
     let terminal = false;
     const update = (status: StreamStatus, error: string | null = null) =>
       setState((current) => ({
@@ -54,17 +55,19 @@ export function useRunEvents(
           const event = eventSchema.parse(JSON.parse(message.data) as unknown);
           if (event.runId !== id || event.payload.mode !== mode)
             throw new Error('Invalid run event');
+          const status =
+            event.type === 'run.status'
+              ? runStatusSchema.parse(event.payload.status)
+              : null;
+          if (event.sequence <= sequence) return;
+          sequence = event.sequence;
           cursor = event.id;
           setState((current) => {
             const previous = current?.runId === id ? current.events : [];
-            const events = [
-              ...previous.filter((record) => record.id !== event.id),
-              event,
-            ].sort((a, b) => a.sequence - b.sequence);
+            const events = [...previous, event];
             return { runId: id, events, status: 'live', error: null };
           });
-          if (event.type === 'run.status') {
-            const status = runStatusSchema.parse(event.payload.status);
+          if (status) {
             if (!isActiveRun(status)) {
               terminal = true;
               source?.close();
@@ -103,6 +106,7 @@ export function useRunEvents(
         )
           throw new Error('Invalid run history');
         cursor = events.at(-1)?.id;
+        sequence = events.at(-1)?.sequence ?? 0;
         const lastStatus = [...events]
           .reverse()
           .find((event) => event.type === 'run.status');

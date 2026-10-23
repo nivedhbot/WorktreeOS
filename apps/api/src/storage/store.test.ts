@@ -112,6 +112,27 @@ describe('file-backed storage', () => {
     expect(store.listEvents(run.id)).toEqual([]);
     expect(store.appendEvent(run.id, 'note', {}).sequence).toBe(1);
   });
+  it('queries only events after a run-scoped cursor and refuses another run cursor', () => {
+    const repo = store.createRepository({
+      name: 'Example',
+      path: fixture.repoPath,
+    });
+    const task = store.createTask({
+      repositoryId: repo.id,
+      title: 'Task',
+      objective: 'Objective',
+      provider: 'mock',
+    });
+    const run = store.createRun(task.id);
+    const first = store.appendEvent(run.id, 'note', { message: 'one' });
+    const second = store.appendEvent(run.id, 'note', { message: 'two' });
+    expect(store.listEvents(run.id, first.id)).toEqual([second]);
+    expect(store.listEvents(run.id, second.id)).toEqual([]);
+    const other = store.createRun(task.id);
+    expect(() => store.listEvents(other.id, first.id)).toThrow(
+      'does not belong',
+    );
+  });
 
   it('enforces database foreign keys and uniqueness independently of validation', () => {
     const repo = store.createRepository({

@@ -370,16 +370,7 @@ export class RunManager {
   }
   eventsSince(id: string, since?: string) {
     this.get(id);
-    const events = this.store.listEvents(id);
-    if (!since) return events;
-    const cursor = events.find((event) => event.id === since);
-    if (!cursor)
-      throw new AppError(
-        404,
-        'EVENT_NOT_FOUND',
-        'Event cursor does not belong to this run',
-      );
-    return events.filter((event) => event.sequence > cursor.sequence);
+    return this.store.listEvents(id, since);
   }
   async shutdown() {
     this.closing = true;

@@ -12,6 +12,8 @@ The current user authorized verification, fixes and pushes through milestone 10.
 - Scheduler repair: invalid queued real approvals now fail even behind occupied slots or blocked prerequisites. Atomic recovery guards prevent concurrent stale-lock reclamation. Twenty targeted workflow/scheduler/process tests passed, including four competing Node processes, plus API typecheck/build and lint. Next: dashboard/history and SSE regressions.
 - Dashboard completion: connected repository rename and task edit forms to existing REST routes. Preserved history/selection during edits and terminal state after delayed responses. History now uses insertion order for equal timestamps. Five hook tests, eight storage tests and the new Chromium edit/approval-invalidation/reload/mobile scenario passed; typecheck/lint/build passed. The first browser attempt had an ambiguous text selector, corrected to the task region. Next: SSE cursor/validation checks and final verification.
 
+- Streaming repair: native reconnect headers override initial query cursors, SQLite reads only events after a run-scoped cursor, and the browser ignores duplicate/older sequences while rejecting invalid status payloads. Nineteen API/storage tests and five event-hook tests passed. Next: full verification and final documentation.
+
 Updated: 2026-10-22. Application version: 0.1.0.
 Workspace: `E:/WorktreeOS`; application root: `E:/WorktreeOS/WorktreeOS-Codex-Starter`.
 

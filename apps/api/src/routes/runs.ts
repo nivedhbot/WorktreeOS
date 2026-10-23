@@ -62,9 +62,9 @@ export function registerRunRoutes(
     const { id } = params.parse(request.params);
     const query = cursorQuery.parse(request.query);
     const header = request.headers['last-event-id'];
-    const since =
-      query.since ??
-      (header === undefined ? undefined : idSchema.parse(header));
+    // Native EventSource reconnects retain the initial URL but advance this
+    // header. Prefer its latest cursor over the original query cursor.
+    const since = header === undefined ? query.since : idSchema.parse(header);
     const replay = manager.eventsSince(id, since);
     if (clients.size >= 32)
       throw new AppError(

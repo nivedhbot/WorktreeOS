@@ -41,6 +41,10 @@ describe('SSE connection lifecycle', () => {
       createdAt: run.createdAt,
     };
     act(() => first.emit(progress));
+    act(() => first.emit(progress));
+    act(() => first.emit(statusEvent(run, 1)));
+    expect(hook.result.current.events).toHaveLength(2);
+    expect(changed).not.toHaveBeenCalled();
     vi.useFakeTimers();
     act(() => first.onerror?.());
     expect(hook.result.current.status).toBe('reconnecting');
@@ -72,6 +76,26 @@ describe('SSE connection lifecycle', () => {
     );
     expect(result.current.status).toBe('error');
     expect(result.current.events).toEqual([]);
+    expect(FakeEventSource.instances[0]!.closed).toBe(true);
+  });
+  it('rejects an invalid status before adding it to the timeline or notifying the workspace', async () => {
+    const task = exampleTask(exampleRepository().id);
+    const run = exampleRun(task, exampleTree(task));
+    vi.spyOn(httpApi, 'events').mockResolvedValue({ mode: 'MOCK', events: [] });
+    FakeEventSource.instances = [];
+    vi.stubGlobal('EventSource', FakeEventSource);
+    const changed = vi.fn();
+    const { result } = renderHook(() => useRunEvents(run, changed));
+    await waitFor(() => expect(FakeEventSource.instances).toHaveLength(1));
+    act(() =>
+      FakeEventSource.instances[0]!.emit({
+        ...statusEvent(run, 1),
+        payload: { mode: 'MOCK', status: 'fabricated-success' },
+      }),
+    );
+    expect(result.current.status).toBe('error');
+    expect(result.current.events).toEqual([]);
+    expect(changed).not.toHaveBeenCalled();
     expect(FakeEventSource.instances[0]!.closed).toBe(true);
   });
   it('accepts matching CODEX history and structured live events and closes on terminal status', async () => {

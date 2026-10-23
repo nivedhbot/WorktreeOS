@@ -335,6 +335,10 @@ describe('MOCK runs and durable streaming', { timeout: 15000 }, () => {
         url: `/api/runs/${run.id}/stream`,
         headers: { 'last-event-id': cursor.id },
       },
+      {
+        url: `/api/runs/${run.id}/stream?since=${log[0]!.id}`,
+        headers: { 'last-event-id': cursor.id },
+      },
     ]) {
       const replay = await app.inject(request);
       expect(replay.statusCode).toBe(200);
