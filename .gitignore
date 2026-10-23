@@ -1,4 +1,6 @@
 node_modules/
+node-compile-cache/
+tsx-*/
 dist/
 build/
 out/
@@ -9,11 +11,16 @@ playwright-report/
 playwright/.auth/
 .npm/
 .cache/
+.vite/
+.turbo/
 .worktreeos/
+worktreeos-demo-*/
 .env
 .env.*
 !.env.example
 *.log
+*.tmp
+*.temp
 *.tsbuildinfo
 *.sqlite
 *.sqlite-*
@@ -25,3 +32,8 @@ playwright/.auth/
 *.pfx
 .DS_Store
 Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
