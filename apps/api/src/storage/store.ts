@@ -274,7 +274,7 @@ export class Store {
   listRuns(taskId: string) {
     return this.database
       .prepare(
-        `SELECT ${runColumns} FROM runs WHERE task_id = ? ORDER BY created_at, id`,
+        `SELECT ${runColumns} FROM runs WHERE task_id = ? ORDER BY created_at, rowid`,
       )
       .all(taskId)
       .map(parseRun);

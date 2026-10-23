@@ -77,6 +77,77 @@ const completed = (page: Page) =>
     }),
   ).toBeVisible();
 
+test('edits tasks and renames repositories while preserving history and invalidating old approval', async ({
+  page,
+  repo,
+}) => {
+  const repository = await register(page, repo.repoPath, 'Editable repository');
+  const task = await createTask(page, 'Original task');
+  const tree = await createTree(page);
+  await page
+    .getByRole('button', { name: 'Start MOCK run', exact: true })
+    .click();
+  await completed(page);
+  const runId = await page.getByLabel('Run history').inputValue();
+  const approvalResponse = await page.request.post(
+    `/api/tasks/${task.id}/approvals`,
+    { data: { worktreeId: tree.id, model: 'gpt-6-luna' } },
+  );
+  expect(approvalResponse.status()).toBe(201);
+  const approval = (await approvalResponse.json()) as { id: string };
+  await page.getByRole('button', { name: 'Edit task', exact: true }).click();
+  const dialog = page.getByRole('dialog');
+  await dialog.getByLabel('Task title', { exact: true }).fill('Revised task');
+  await dialog
+    .getByLabel('Objective', { exact: true })
+    .fill('Review the revised objective.');
+  await dialog.getByRole('button', { name: 'Save task', exact: true }).click();
+  await expect(dialog).not.toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Revised task', exact: true }),
+  ).toBeVisible();
+  await expect(page.getByLabel('Run history')).toHaveValue(runId);
+  expect(
+    (await (await page.request.get(`/api/approvals/${approval.id}`)).json())
+      .status,
+  ).toBe('invalidated');
+  await page
+    .getByRole('button', { name: 'Rename repository', exact: true })
+    .click();
+  await expect(dialog.getByLabel('Local Git repository path')).toHaveAttribute(
+    'readonly',
+    '',
+  );
+  await dialog.getByLabel('Repository name').fill('Renamed repository');
+  await dialog
+    .getByRole('button', { name: 'Save repository', exact: true })
+    .click();
+  await expect(dialog).not.toBeVisible();
+  await expect(page.getByLabel('Run history')).toHaveValue(runId);
+  await page.reload();
+  await expect(
+    page.getByRole('heading', { name: 'Revised task', exact: true }),
+  ).toBeVisible();
+  await expect(
+    page
+      .getByRole('region', { name: 'Revised task', exact: true })
+      .getByText('Review the revised objective.', { exact: true }),
+  ).toBeVisible();
+  await expect(page.getByLabel('Run history')).toHaveValue(runId);
+  const saved = (await (
+    await page.request.get(`/api/repos/${repository.id}`)
+  ).json()) as Repository;
+  expect(saved.name).toBe('Renamed repository');
+  expect(saved.path).toBe(repository.path);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(
+    page.getByRole('button', { name: 'Edit task', exact: true }),
+  ).toBeDisabled();
+  await expect(
+    page.getByRole('button', { name: 'Rename repository', exact: true }),
+  ).toBeDisabled();
+});
+
 test('announces loading, supports keyboard dialog focus and fits narrow viewports', async ({
   page,
   repo,

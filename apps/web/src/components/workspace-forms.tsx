@@ -7,6 +7,7 @@ import {
   type CreateTask,
   type Worktree,
   type Task,
+  type Repository,
 } from '@worktreeos/shared';
 import { Dialog } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -23,16 +24,18 @@ function fieldErrors(
 }
 
 export function RepositoryDialog({
+  repository,
   close,
   submit,
   readOnly,
 }: {
+  repository?: Repository;
   close: () => void;
   submit: (input: CreateRepository) => Promise<void>;
   readOnly: boolean;
 }) {
-  const [name, setName] = useState('');
-  const [path, setPath] = useState('');
+  const [name, setName] = useState(repository?.name ?? '');
+  const [path, setPath] = useState(repository?.path ?? '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fields, setFields] = useState<FieldErrors>({});
@@ -62,7 +65,7 @@ export function RepositoryDialog({
       onOpenChange={(open) => {
         if (!open && !busy) close();
       }}
-      title="Register a repository"
+      title={repository ? 'Rename repository' : 'Register a repository'}
       description="Connect an existing local Git repository. Your code stays on your machine."
     >
       <form
@@ -70,7 +73,7 @@ export function RepositoryDialog({
           void save(event);
         }}
         noValidate
-        aria-label="Register repository"
+        aria-label={repository ? 'Rename repository' : 'Register repository'}
         aria-busy={busy}
       >
         <div className="form-symbol">
@@ -101,6 +104,7 @@ export function RepositoryDialog({
         </label>
         <input
           id="repository-path"
+          readOnly={!!repository}
           className="mono"
           value={path}
           onChange={(event) => setPath(event.target.value)}
@@ -132,7 +136,11 @@ export function RepositoryDialog({
           </Button>
           <Button type="submit" disabled={busy || readOnly}>
             <Plus />
-            {busy ? 'Registering…' : 'Register repository'}
+            {busy
+              ? 'Saving…'
+              : repository
+                ? 'Save repository'
+                : 'Register repository'}
           </Button>
         </div>
       </form>
@@ -141,6 +149,7 @@ export function RepositoryDialog({
 }
 
 export function TaskDialog({
+  task,
   repositoryId,
   repositoryName,
   close,
@@ -148,6 +157,7 @@ export function TaskDialog({
   readOnly,
   tasks = [],
 }: {
+  task?: Task;
   repositoryId: string;
   repositoryName: string;
   close: () => void;
@@ -156,8 +166,8 @@ export function TaskDialog({
   tasks?: Task[];
 }) {
   const [dependencyIds, setDependencyIds] = useState<string[]>([]);
-  const [title, setTitle] = useState('');
-  const [objective, setObjective] = useState('');
+  const [title, setTitle] = useState(task?.title ?? '');
+  const [objective, setObjective] = useState(task?.objective ?? '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fields, setFields] = useState<FieldErrors>({});
@@ -193,7 +203,7 @@ export function TaskDialog({
       onOpenChange={(open) => {
         if (!open && !busy) close();
       }}
-      title="Create a task"
+      title={task ? 'Edit task' : 'Create a task'}
       description={`Give your next idea a clear objective in ${repositoryName}.`}
     >
       <form
@@ -201,7 +211,8 @@ export function TaskDialog({
           void save(event);
         }}
         noValidate
-        aria-label="Create task"
+        aria-label={task ? 'Edit task' : 'Create task'}
+        aria-busy={busy}
       >
         {error && <ErrorNotice message={error} />}
         <div className="form-repository">
@@ -254,7 +265,7 @@ export function TaskDialog({
         <select id="task-provider" value="mock" disabled>
           <option value="mock">MOCK — deterministic local simulation</option>
         </select>
-        {!!tasks.length && (
+        {!task && !!tasks.length && (
           <>
             <label className="field-label" htmlFor="task-prerequisites">
               Prerequisites (optional)
@@ -292,8 +303,9 @@ export function TaskDialog({
         </p>
         <div className="form-note">
           <GitBranch size={16} />
-          Creating a task saves its objective. You will create its worktree and
-          start its run separately.
+          {task
+            ? 'Editing creates a new task revision. Existing run history is retained; real runs need fresh approval.'
+            : 'Creating a task saves its objective. You will create its worktree and start its run separately.'}
         </div>
         <div className="dialog-actions">
           <Button type="button" variant="ghost" disabled={busy} onClick={close}>
@@ -301,7 +313,7 @@ export function TaskDialog({
           </Button>
           <Button type="submit" disabled={busy || readOnly}>
             <Plus />
-            {busy ? 'Creating…' : 'Create task'}
+            {busy ? 'Saving…' : task ? 'Save task' : 'Create task'}
           </Button>
         </div>
       </form>

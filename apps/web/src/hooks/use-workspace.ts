@@ -110,26 +110,28 @@ export function useWorkspace() {
     return () => window.clearInterval(timer);
   }, [reload]);
   const upsertRun = useCallback((run: Run) => {
-    setSnapshot((current) =>
-      current && current.tasks.some((task) => task.id === run.taskId)
-        ? {
-            ...current,
-            runs: {
-              ...current.runs,
-              [run.taskId]: [
-                ...(current.runs[run.taskId] ?? []).filter(
-                  (record) => record.id !== run.id,
-                ),
-                run,
-              ].sort(
-                (a, b) =>
-                  a.createdAt.localeCompare(b.createdAt) ||
-                  a.id.localeCompare(b.id),
-              ),
-            },
-          }
-        : current,
-    );
+    setSnapshot((current) => {
+      if (!current?.tasks.some((task) => task.id === run.taskId))
+        return current;
+      const records = current.runs[run.taskId] ?? [];
+      const existing = records.find((record) => record.id === run.id);
+      const accepted =
+        existing && !isActiveRun(existing.status) && isActiveRun(run.status)
+          ? existing
+          : run;
+      const updated = existing
+        ? records.map((record) => (record.id === run.id ? accepted : record))
+        : [...records, accepted];
+      return {
+        ...current,
+        runs: {
+          ...current.runs,
+          [run.taskId]: updated.sort((a, b) =>
+            a.createdAt.localeCompare(b.createdAt),
+          ),
+        },
+      };
+    });
   }, []);
   const statusChanged = useCallback(
     (event?: RunEvent) => {
@@ -146,7 +148,7 @@ export function useWorkspace() {
                   Object.entries(current.runs).map(([taskId, records]) => [
                     taskId,
                     records.map((run) =>
-                      run.id === event.runId
+                      run.id === event.runId && isActiveRun(run.status)
                         ? { ...run, status: status.data }
                         : run,
                     ),
@@ -166,7 +168,9 @@ export function useWorkspace() {
       record,
     ]);
     setRepositoryId(record.id);
-    setSnapshot(null);
+    setSnapshot((current) =>
+      current?.repositoryId === record.id ? current : null,
+    );
     setRepositoryError(null);
     setSnapshotError(null);
   }, []);
@@ -180,7 +184,10 @@ export function useWorkspace() {
                 ...current.tasks.filter((task) => task.id !== record.id),
                 record,
               ],
-              runs: { ...current.runs, [record.id]: [] },
+              runs: {
+                ...current.runs,
+                [record.id]: current.runs[record.id] ?? [],
+              },
             }
           : current,
       ),

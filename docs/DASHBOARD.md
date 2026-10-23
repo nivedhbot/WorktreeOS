@@ -14,6 +14,8 @@ Run `npm install` and `npm run dev` from the project root, then open http://127.
 
 ## Navigation and state
 
+Use **Rename repository** beside the picker to change its display name; the registered path is read-only. **Edit task** beside the task status updates its title/objective after active work finishes. Saving creates a new revision and invalidates old approvals while retaining execution history. Use the dependency editor for prerequisite changes. Both forms remain disabled in mobile read-only view.
+
 The sidebar shows the current repository and its tasks. The task panel supports searchable list and board views, plus All, Not started, Active, Completed, and Needs attention filters. Status is derived from each task's latest persisted run. The board groups tasks into Ready, Active, and Review. Run history and worktree inspection stay scoped to the selected task/repository.
 
 API responses are parsed with shared Zod contracts. Network, server validation, Git state, and stream errors have visible feedback and retry controls. Repository data refreshes every ten seconds and after actions. Run status events update the UI immediately and trigger a REST refresh. An older REST snapshot cannot regress a completed/canceled/failed run back to active.

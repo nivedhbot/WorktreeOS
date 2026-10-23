@@ -18,6 +18,40 @@ describe('file-backed storage', () => {
     vi.unstubAllEnvs();
     fixture.cleanup();
   });
+  it('orders history by insertion when runs share a millisecond timestamp', () => {
+    const repo = store.createRepository({
+      name: 'Example',
+      path: fixture.repoPath,
+    });
+    const task = store.createTask({
+      repositoryId: repo.id,
+      title: 'Task',
+      objective: 'Objective',
+      provider: 'mock',
+    });
+    const first = store.createRun(task.id);
+    const second = store.createRun(task.id);
+    const db = new DatabaseSync(join(fixture.dataDir, 'worktreeos.sqlite'));
+    try {
+      db.prepare('UPDATE runs SET created_at = ?').run(
+        '2026-01-01T00:00:00.000Z',
+      );
+      db.prepare('UPDATE runs SET id = ? WHERE id = ?').run(
+        'ffffffff-ffff-4fff-8fff-ffffffffffff',
+        first.id,
+      );
+      db.prepare('UPDATE runs SET id = ? WHERE id = ?').run(
+        '00000000-0000-4000-8000-000000000000',
+        second.id,
+      );
+      expect(store.listRuns(task.id).map((run) => run.id)).toEqual([
+        'ffffffff-ffff-4fff-8fff-ffffffffffff',
+        '00000000-0000-4000-8000-000000000000',
+      ]);
+    } finally {
+      db.close();
+    }
+  });
 
   it('preserves all four record types, edits, and ordered events across reopen', () => {
     const repo = store.createRepository({

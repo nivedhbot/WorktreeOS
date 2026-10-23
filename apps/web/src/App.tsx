@@ -8,6 +8,7 @@ import {
   Layers,
   LockKeyhole,
   Plus,
+  Pencil,
   RefreshCw,
   ShieldCheck,
   Workflow,
@@ -40,7 +41,9 @@ export function App() {
   const health = useApiHealth();
   const workspace = useWorkspace();
   const readOnly = useReadOnlyViewport();
-  const [dialog, setDialog] = useState<'repository' | 'task' | null>(null);
+  const [dialog, setDialog] = useState<
+    'repository' | 'task' | 'rename-repository' | 'edit-task' | null
+  >(null);
   const [removing, setRemoving] = useState<Worktree | null>(null);
   const [codexTree, setCodexTree] = useState<Worktree | null>(null);
   const [approvalReview, setApprovalReview] = useState<Approval | null>(null);
@@ -246,6 +249,17 @@ export function App() {
             <code className="repository-path" title={repository?.path}>
               {repository?.path ?? 'Your code stays on your machine.'}
             </code>
+            {repository && (
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Rename repository"
+                onClick={() => setDialog('rename-repository')}
+                disabled={readOnly || !!busy}
+              >
+                <Pencil size={16} />
+              </Button>
+            )}
             <Button
               variant="outline"
               onClick={() => setDialog('repository')}
@@ -373,6 +387,7 @@ export function App() {
                     <RunViewer
                       key={task.id}
                       task={task}
+                      edit={() => setDialog('edit-task')}
                       tree={tree}
                       inspectedTree={inspectedTree}
                       runs={taskRuns}
@@ -476,35 +491,54 @@ export function App() {
           </span>
         </div>
       </div>
-      {dialog === 'repository' && (
+      {(dialog === 'repository' ||
+        (dialog === 'rename-repository' && repository)) && (
         <RepositoryDialog
+          {...(dialog === 'rename-repository' && repository
+            ? { repository }
+            : {})}
           close={() => setDialog(null)}
           readOnly={readOnly}
           submit={async (input) => {
-            const created = await api.registerRepository(input);
+            const created =
+              dialog === 'rename-repository' && repository
+                ? await api.editRepository(repository.id, { name: input.name })
+                : await api.registerRepository(input);
             workspace.acceptRepository(created);
-            setSelectedTaskId(null);
-            setSelectedRunId(null);
+            if (dialog === 'repository') {
+              setSelectedTaskId(null);
+              setSelectedRunId(null);
+            }
+            setWorkflowVersion((value) => value + 1);
             workspace.reload();
           }}
         />
       )}
-      {dialog === 'task' && repository && (
-        <TaskDialog
-          tasks={tasks}
-          repositoryId={repository.id}
-          repositoryName={repository.name}
-          close={() => setDialog(null)}
-          readOnly={readOnly}
-          submit={async (input) => {
-            const created = await api.createTask(input);
-            workspace.acceptTask(created);
-            setSelectedTaskId(created.id);
-            setSelectedRunId(null);
-            workspace.reload();
-          }}
-        />
-      )}
+      {(dialog === 'task' || (dialog === 'edit-task' && task)) &&
+        repository && (
+          <TaskDialog
+            {...(dialog === 'edit-task' && task ? { task } : {})}
+            tasks={tasks}
+            repositoryId={repository.id}
+            repositoryName={repository.name}
+            close={() => setDialog(null)}
+            readOnly={readOnly}
+            submit={async (input) => {
+              const created =
+                dialog === 'edit-task' && task
+                  ? await api.editTask(task.id, {
+                      title: input.title,
+                      objective: input.objective,
+                    })
+                  : await api.createTask(input);
+              workspace.acceptTask(created);
+              setSelectedTaskId(created.id);
+              if (dialog === 'task') setSelectedRunId(null);
+              setWorkflowVersion((value) => value + 1);
+              workspace.reload();
+            }}
+          />
+        )}
       {removing && (
         <RemoveWorktreeDialog
           worktree={removing}

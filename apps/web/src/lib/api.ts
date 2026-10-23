@@ -10,6 +10,8 @@ import {
   changedFileSchema,
   type CreateRepository,
   type CreateTask,
+  type EditTask,
+  type EditRepository,
   codexAvailabilitySchema,
   type StartRun,
   approvalSchema,
@@ -125,6 +127,11 @@ export const api = {
     }),
   registerRepository: (input: CreateRepository) =>
     request('/repos', repositorySchema, { method: 'POST', body: input }),
+  editRepository: (id: string, input: EditRepository) =>
+    request(`/repos/${encodeURIComponent(id)}`, repositorySchema, {
+      method: 'PATCH',
+      body: input,
+    }),
   tasks: (repositoryId: string, signal?: AbortSignal) =>
     request(
       `/tasks?repositoryId=${encodeURIComponent(repositoryId)}`,
@@ -133,6 +140,11 @@ export const api = {
     ),
   createTask: (input: CreateTask) =>
     request('/tasks', taskSchema, { method: 'POST', body: input }),
+  editTask: (id: string, input: EditTask) =>
+    request(`/tasks/${encodeURIComponent(id)}`, taskSchema, {
+      method: 'PATCH',
+      body: input,
+    }),
   worktrees: (repositoryId: string, signal?: AbortSignal) =>
     request(
       `/worktrees?repositoryId=${encodeURIComponent(repositoryId)}`,

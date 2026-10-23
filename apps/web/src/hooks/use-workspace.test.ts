@@ -13,6 +13,54 @@ import {
 
 describe('workspace refresh consistency', () => {
   afterEach(() => vi.unstubAllGlobals());
+  it('retains history and loaded data when accepting task and repository edits', async () => {
+    const repo = exampleRepository();
+    const task = exampleTask(repo.id);
+    const run = exampleRun(task, exampleTree(task), 'completed');
+    vi.stubGlobal(
+      'fetch',
+      mockApi({ repositories: [repo], tasks: [task], runs: [run] }).fetch,
+    );
+    const { result } = renderHook(useWorkspace);
+    await waitFor(() =>
+      expect(result.current.snapshot?.runs[task.id]).toHaveLength(1),
+    );
+    act(() => result.current.acceptTask({ ...task, title: 'Edited task' }));
+    act(() => result.current.acceptRepository({ ...repo, name: 'Renamed' }));
+    expect(result.current.snapshot?.tasks[0]?.title).toBe('Edited task');
+    expect(result.current.snapshot?.runs[task.id]).toEqual([run]);
+  });
+  it('keeps terminal state and insertion order when delayed run responses arrive', async () => {
+    const repo = exampleRepository();
+    const task = exampleTask(repo.id);
+    const first = {
+      ...exampleRun(task, exampleTree(task), 'completed'),
+      id: 'ffffffff-ffff-4fff-8fff-ffffffffffff',
+    };
+    const second = {
+      ...exampleRun(task, exampleTree(task), 'completed'),
+      id: '00000000-0000-4000-8000-000000000000',
+    };
+    vi.stubGlobal(
+      'fetch',
+      mockApi({ repositories: [repo], tasks: [task], runs: [first] }).fetch,
+    );
+    const { result } = renderHook(useWorkspace);
+    await waitFor(() =>
+      expect(result.current.snapshot?.runs[task.id]).toHaveLength(1),
+    );
+    act(() => result.current.upsertRun(second));
+    act(() => result.current.upsertRun({ ...first, status: 'queued' }));
+    expect(result.current.snapshot?.runs[task.id]).toEqual([first, second]);
+    act(() =>
+      result.current.statusChanged(
+        statusEvent({ ...first, status: 'running' }, 1),
+      ),
+    );
+    expect(result.current.snapshot?.runs[task.id]?.[0]?.status).toBe(
+      'completed',
+    );
+  });
   it('keeps the loaded snapshot when the already selected repository is selected again', async () => {
     const repo = exampleRepository();
     const task = exampleTask(repo.id);

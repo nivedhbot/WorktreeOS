@@ -6,6 +6,7 @@ import {
   FileCode2,
   GitBranch,
   Play,
+  Pencil,
   Radio,
   RotateCcw,
   Square,
@@ -37,6 +38,7 @@ interface Props {
   createTree: () => void;
   start: () => void;
   startCodex?: () => void;
+  edit?: () => void;
   cancel: () => void;
   retry: () => void;
   remove: () => void;
@@ -56,6 +58,7 @@ export function RunViewer({
   createTree,
   start,
   startCodex,
+  edit,
   cancel,
   retry,
   remove,
@@ -86,6 +89,17 @@ export function RunViewer({
           </span>
           <span className="mock-badge">{run?.mode ?? 'MOCK'}</span>
           <StatusBadge status={run?.status ?? 'not_started'} />
+          {edit && (
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Edit task"
+              onClick={edit}
+              disabled={readOnly || !!busy || anyActive}
+            >
+              <Pencil size={14} />
+            </Button>
+          )}
         </div>
         <h2 id="run-title">{task.title}</h2>
         <p className="task-objective">{task.objective}</p>
