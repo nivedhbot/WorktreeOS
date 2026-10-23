@@ -158,7 +158,7 @@ export function useWorkspace() {
             : current,
         );
       }
-      reload();
+      if (!event || (status?.success && !isActiveRun(status.data))) reload();
     },
     [reload],
   );

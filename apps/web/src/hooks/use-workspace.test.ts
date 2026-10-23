@@ -13,6 +13,41 @@ import {
 
 describe('workspace refresh consistency', () => {
   afterEach(() => vi.unstubAllGlobals());
+  it('updates active status locally and fetches fresh metadata only after completion', async () => {
+    const repo = exampleRepository();
+    const task = exampleTask(repo.id);
+    const run = exampleRun(task, exampleTree(task), 'queued');
+    const api = mockApi({ repositories: [repo], tasks: [task], runs: [run] });
+    vi.stubGlobal('fetch', api.fetch);
+    const { result } = renderHook(useWorkspace);
+    await waitFor(() =>
+      expect(result.current.snapshot?.runs[task.id]?.[0]?.status).toBe(
+        'queued',
+      ),
+    );
+    const repositoryCalls = () =>
+      api.fetch.mock.calls.filter(([url]) => String(url) === '/api/repos')
+        .length;
+    const initialCalls = repositoryCalls();
+    act(() =>
+      result.current.statusChanged(
+        statusEvent({ ...run, status: 'preparing' }, 2),
+      ),
+    );
+    expect(result.current.snapshot?.runs[task.id]?.[0]?.status).toBe(
+      'preparing',
+    );
+    expect(repositoryCalls()).toBe(initialCalls);
+    act(() =>
+      result.current.statusChanged(
+        statusEvent({ ...run, status: 'completed' }, 3),
+      ),
+    );
+    await waitFor(() => expect(repositoryCalls()).toBe(initialCalls + 1));
+    expect(result.current.snapshot?.runs[task.id]?.[0]?.status).toBe(
+      'completed',
+    );
+  });
   it('retains history and loaded data when accepting task and repository edits', async () => {
     const repo = exampleRepository();
     const task = exampleTask(repo.id);
